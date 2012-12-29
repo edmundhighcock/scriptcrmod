@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "scriptcrmod"
-  s.version = ""
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Edmund Highcock"]
@@ -24,7 +24,9 @@ Gem::Specification.new do |s|
     "README.md",
     "README.rdoc",
     "Rakefile",
+    "VERSION",
     "lib/scriptcrmod.rb",
+    "scriptcrmod.gemspec",
     "test/helper.rb",
     "test/test_scriptcrmod.rb"
   ]
