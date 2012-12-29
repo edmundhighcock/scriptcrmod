@@ -1,6 +1,23 @@
 
 class CodeRunner
+	# This is a module which can be used for submitting 
+	# arbitrary scripts on supercomputers using the 
+	# CodeRunner framework (see coderunner.sourceforge.net
+	# and coderunner on rubygems.org). It comes preinstalled
+	# with CodeRunner. 
+	#
+	# An example paints a thousand words: 
+	# here is how to use it from the command line
+	# to submit a ruby script:
+	# 	coderunner sub -W 60 -n 1x32 -C script -X '/usr/bin/env ruby' \
+	# 		-p '{file_name: "my_script.rb", arguments: "my command line args"}'
+	
 	class Script < Run
+
+		# Make sure the basic defaults file exists
+		#
+		FileUtils.makedirs(ENV['HOME'] + '/.coderunner/scriptcrmod/defaults_files')
+		FileUtils.touch(ENV['HOME'] + '/.coderunner/scriptcrmod/defaults_files/script_defaults.rb')
 		
 # @code = 'cubecalc'
 
