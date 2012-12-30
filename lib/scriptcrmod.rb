@@ -10,7 +10,13 @@ class CodeRunner
 	# here is how to use it from the command line
 	# to submit a ruby script:
 	# 	coderunner sub -W 60 -n 1x32 -C script -X '/usr/bin/env ruby' \
-	# 		-p '{file_name: "my_script.rb", arguments: "my command line args"}'
+	# 		-p '{file_name: "my_script.rb", arguments: "my command line args", \
+	# 			replace_tokens: {"TOKEN" => "replace"}'
+	#
+	# The parameter replace_tokens takes a hash of {string => string}
+	# which will be used to modify the text in the script via
+	# 	text.gsub!(Regexp.new(Regexp.escape("TOKEN")), replace)
+	# Symbols may be used instead of strings
 	
 	class Script < Run
 
@@ -21,7 +27,9 @@ class CodeRunner
 		
 # @code = 'cubecalc'
 
-@variables = [:file_name, :arguments]
+@code_module_folder = File.expand_path(File.dirname(__FILE__))
+
+@variables = [:file_name, :arguments, :preamble, :replace_tokens]
 
 @naming_pars = []
 
@@ -29,7 +37,7 @@ class CodeRunner
 
 # e.g. number of iterations
 
-@run_info = []
+@run_info = [ :percent_complete]
 
 # @@executable_name = 'cubecalc'
 
@@ -45,25 +53,48 @@ class CodeRunner
 
 def process_directory_code_specific
 	if @running
-		@status = :Incomplete
+		@status ||= :Incomplete
 	else
 		@status = :Complete
 	end
+	eval(File.read('script_outputs.rb')) if FileTest.exist? 'script_outputs.rb'
 end
 
 def print_out_line
-		return sprintf("%d:%d %30s %10s", @id, @job_no, @run_name, @status)
+		line =  sprintf("%d:%d %30s %10s %s", @id, @job_no, @run_name, @status, @nprocs.to_s) 
+		line += sprintf(" %3.1f\%", @percent_complete) if @percent_complete
+		line += " -- #@comment" if @comment
+		return line
 end
 
 def parameter_string
-	return sprintf("%s %s", @file_name, @arguments)
+	return sprintf("%s %s", @file_name.to_s, @arguments.to_s)
 end
 
 def generate_input_file
-	FileUtils.cp(@file_name, @directory + File.basename(@directory))
+
+	if @file_name
+		ep ['Copying:', rcp.runner.root_folder + '/' + @file_name, @directory + '/' + File.basename(@file_name)]
+		#FileUtils.cp(rcp.runner.root_folder + '/' + @file_name, @directory + '/' + File.basename(@file_name))
+		text = File.read(rcp.runner.root_folder + '/' + @file_name)
+		if @replace_tokens
+			@replace_tokens.each do |token, replace_str|
+				text.gsub!(Regexp.new(Regexp.escape(token)), replace_str.to_s)
+			end
+		end
+		File.open(@directory + '/' + File.basename(@file_name), 'w'){|file| file.puts text}
+	else
+		eputs 'Running without a script file...'
+	end
 end
 # @run_class.variables.keys[0]
 def parameter_transition(run)
+end
+
+# Override whatever is in the system module
+def run_command
+	eputs "Warning: preamble does not end in a new line" unless !preamble or preamble =~ /\n\s*\Z/
+	"#{preamble} #{executable_location}/#{executable_name} #{parameter_string}"
 end
 
 #def executable_location
@@ -76,6 +107,7 @@ end
 
 def graphkit(name, options)
 	case name
+	when 'empty'
 	else
 		raise 'Unknown graph'
 	end
