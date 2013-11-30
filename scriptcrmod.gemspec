@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "scriptcrmod"
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Edmund Highcock"]
-  s.date = "2012-12-30"
+  s.date = "2013-11-30"
   s.description = "A module for CodeRunner to allow arbitrary scripts to be run. Installed automatically with the coderunner gem."
   s.email = "github@edmundhighcock.com"
   s.extra_rdoc_files = [
