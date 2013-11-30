@@ -68,21 +68,25 @@ def print_out_line
 end
 
 def parameter_string
-	return sprintf("%s %s", @file_name.to_s, @arguments.to_s)
+	file = @file_name.kind_of?(Array) ? @file_name[0] : @file_name
+	return sprintf("%s %s", file, @arguments.to_s)
 end
 
 def generate_input_file
 
 	if @file_name
-		ep ['Copying:', rcp.runner.root_folder + '/' + @file_name, @directory + '/' + File.basename(@file_name)]
-		#FileUtils.cp(rcp.runner.root_folder + '/' + @file_name, @directory + '/' + File.basename(@file_name))
-		text = File.read(rcp.runner.root_folder + '/' + @file_name)
-		if @replace_tokens
-			@replace_tokens.each do |token, replace_str|
-				text.gsub!(Regexp.new(Regexp.escape(token)), replace_str.to_s)
+		files = @file_name.kind_of?(Array) ? @file_name : [@file_name] 
+		files.each do |file|
+			ep ['Copying:', rcp.runner.root_folder + '/' + file, @directory + '/' + File.basename(file)]
+			#FileUtils.cp(rcp.runner.root_folder + '/' + file, @directory + '/' + File.basename(file))
+			text = File.read(rcp.runner.root_folder + '/' + file)
+			if @replace_tokens
+				@replace_tokens.each do |token, replace_str|
+					text.gsub!(Regexp.new('\b' + Regexp.escape(token) + '\b'), replace_str.to_s)
+				end
 			end
+			File.open(@directory + '/' + File.basename(file), 'w'){|file| file.puts text}
 		end
-		File.open(@directory + '/' + File.basename(@file_name), 'w'){|file| file.puts text}
 	else
 		eputs 'Running without a script file...'
 	end
